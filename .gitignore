@@ -1,0 +1,14 @@
+# Compiled binaries
+bin/
+*.o
+*.out
+
+# macOS system files
+.DS_Store
+._*
+
+# Temporary files
+*.swp
+*~
+*.log
+
