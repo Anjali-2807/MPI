@@ -1,27 +1,12 @@
-#!/usr/bin/env bash
-# ==============================================================================
-# Package Complete Lab Submission into a ZIP Archive
-# ==============================================================================
+#!/bin/bash
+# Package submission files into a zip archive
 
-set -e
+ARCHIVE="mpi_assignment_submission.zip"
+rm -f "$ARCHIVE"
 
-PROJECT_DIR="/Users/anjalitiwari/.gemini/antigravity/scratch/mpi_distributed_systems"
-ARCHIVE_NAME="mpi_assignment_submission.zip"
-
-cd "$PROJECT_DIR"
-
-echo "================================================================="
-echo " Packaging MPI Assignment Submission Package"
-echo "================================================================="
-
-# Remove existing zip if any
-rm -f "$ARCHIVE_NAME"
-
-# Zip required files while excluding git repository and compiled binaries
-zip -r "$ARCHIVE_NAME" \
+zip -r "$ARCHIVE" \
     src/ \
     scripts/ \
-    docs/ \
     screenshots/ \
     Makefile \
     hostfile \
@@ -29,8 +14,4 @@ zip -r "$ARCHIVE_NAME" \
     .gitignore \
     -x "*.DS_Store*" -x "*bin/*"
 
-echo "================================================================="
-echo " Package created successfully: $PROJECT_DIR/$ARCHIVE_NAME"
-ls -lh "$ARCHIVE_NAME"
-echo "================================================================="
-
+echo "Created $ARCHIVE successfully."

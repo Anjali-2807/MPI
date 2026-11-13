@@ -1,1 +1,6 @@
-c
+# MPI Hostfile for 2 Systems
+# System 1 (Master): 192.168.1.10
+# System 2 (Worker): 192.168.1.20
+
+192.168.1.10 slots=1
+192.168.1.20 slots=1

@@ -1,20 +1,12 @@
-/**
- * ============================================================================
- * Program: 02_ping_pong.c
- * Purpose: Ping-Pong Benchmark & Latency Measurement between Two Systems
- * Course:  Distributed & Parallel Systems
- * Author:  Parallel Computing Lab Submission
- * 
+/*
+ * Program 2: Ping-Pong Communication and Latency Measurement
+ * Author: Anjali Tiwari
+ * Course: Parallel and Distributed Computing
+ * Instructor: Dr. Sonal Yadav
+ *
  * Description:
- *   Implements a classic Ping-Pong communication pattern between System 1 (Rank 0)
- *   and System 2 (Rank 1). A counter ("ball") is bounced back and forth between
- *   the two network nodes until a limit is reached.
- *   
- *   Measures:
- *   - Total elapsed execution time using MPI_Wtime()
- *   - Average round-trip time (RTT)
- *   - One-way network latency between System 1 and System 2
- * ============================================================================
+ *   Bounces a counter back and forth between System 1 and System 2
+ *   to measure network round-trip time (RTT) and one-way latency.
  */
 
 #include <stdio.h>
@@ -22,51 +14,46 @@
 #include <mpi.h>
 
 #define PING_PONG_LIMIT 10
-#define TAG_PING_PONG   300
 
-int main(int argc, char** argv) {
+int main(int argc, char *argv[]) {
     int rank, size;
-    int processor_name_len;
-    char processor_name[MPI_MAX_PROCESSOR_NAME];
-    int ping_pong_count = 0;
-    int partner_rank;
+    int len;
+    char hostname[MPI_MAX_PROCESSOR_NAME];
+    int count = 0;
+    int partner;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-    MPI_Get_processor_name(processor_name, &processor_name_len);
+    MPI_Get_processor_name(hostname, &len);
 
     if (size != 2) {
         if (rank == 0) {
-            fprintf(stderr, "Error: Ping-pong requires exactly 2 processes.\n");
+            printf("Error: This program must be run with 2 processes.\n");
         }
         MPI_Finalize();
         return 1;
     }
 
-    // Determine partner: Rank 0's partner is 1, Rank 1's partner is 0
-    partner_rank = (rank + 1) % 2;
+    partner = (rank == 0) ? 1 : 0;
 
-    // Synchronize both systems before starting the timer
+    // Synchronize both systems before starting benchmark
     MPI_Barrier(MPI_COMM_WORLD);
     double start_time = MPI_Wtime();
 
-    while (ping_pong_count < PING_PONG_LIMIT) {
-        if (rank == ping_pong_count % 2) {
-            // It is this rank's turn to hit the ball (increment and send)
-            ping_pong_count++;
-            MPI_Send(&ping_pong_count, 1, MPI_INT, partner_rank, TAG_PING_PONG, MPI_COMM_WORLD);
+    while (count < PING_PONG_LIMIT) {
+        if (rank == count % 2) {
+            count++;
+            MPI_Send(&count, 1, MPI_INT, partner, 0, MPI_COMM_WORLD);
             printf("[Host: %-15s | Rank %d] Sent ping_pong_count = %2d to Rank %d\n",
-                   processor_name, rank, ping_pong_count, partner_rank);
+                   hostname, rank, count, partner);
         } else {
-            // Wait to receive the ball from the partner
-            MPI_Recv(&ping_pong_count, 1, MPI_INT, partner_rank, TAG_PING_PONG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&count, 1, MPI_INT, partner, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             printf("[Host: %-15s | Rank %d] Received ping_pong_count = %2d from Rank %d\n",
-                   processor_name, rank, ping_pong_count, partner_rank);
+                   hostname, rank, count, partner);
         }
     }
 
-    // Synchronize both systems after completing all exchanges
     MPI_Barrier(MPI_COMM_WORLD);
     double end_time = MPI_Wtime();
     double total_time = end_time - start_time;
@@ -88,4 +75,3 @@ int main(int argc, char** argv) {
     MPI_Finalize();
     return 0;
 }
-
